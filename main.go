@@ -65,6 +65,9 @@ func main() {
 		}
 		if lastResized != hwnd {
 			*turns = make([]int, len(edgeFuncs)) // reset
+			if idx, ok := nextCycleIndex(hwnd, i); ok {
+				(*turns)[i] = idx
+			}
 		}
 		if _, err := resize(hwnd, funcs[i][(*turns)[i]%len(funcs[i])]); err != nil {
 			fmt.Printf("warn: resize: %v\n", err)
@@ -162,6 +165,56 @@ func center(disp, cur w32.RECT) w32.RECT {
 		Right:  disp.Left + w + cur.Width(),
 		Top:    disp.Top + h,
 		Bottom: disp.Top + h + cur.Height()}
+}
+
+// frameAndWorkArea returns the DPI-normalized extended frame bounds of hwnd
+// together with the work area of the monitor that contains it.
+func frameAndWorkArea(hwnd w32.HWND) (frame, work w32.RECT, err error) {
+	mon := w32.MonitorFromWindow(hwnd, w32.MONITOR_DEFAULTTONEAREST)
+	hdc := w32.GetDC(hwnd)
+	displayDPI := w32.GetDeviceCaps(hdc, w32.LOGPIXELSY)
+	if !w32.ReleaseDC(hwnd, hdc) {
+		return frame, work, fmt.Errorf("failed to ReleaseDC:%d", w32.GetLastError())
+	}
+	var monInfo w32.MONITORINFO
+	if !w32.GetMonitorInfo(mon, &monInfo) {
+		return frame, work, fmt.Errorf("failed to GetMonitorInfo:%d", w32.GetLastError())
+	}
+	ok, f := w32.DwmGetWindowAttributeEXTENDED_FRAME_BOUNDS(hwnd)
+	if !ok {
+		return frame, work, fmt.Errorf("failed to DwmGetWindowAttributeEXTENDED_FRAME_BOUNDS:%d", w32.GetLastError())
+	}
+	windowDPI := w32ex.GetDpiForWindow(hwnd)
+	return resizeForDpi(f, int32(windowDPI), int32(displayDPI)), monInfo.RcWork, nil
+}
+
+// nextCycleIndex picks the first step of an edge snap cycle based on the
+// window's current size. It advances to the first step that is strictly
+// smaller than the current size, or to full screen when the window is already
+// at or below the smallest step. dir is the edgeFuncs row index.
+func nextCycleIndex(hwnd w32.HWND, dir int) (int, bool) {
+	frame, work, err := frameAndWorkArea(hwnd)
+	if err != nil {
+		return 0, false
+	}
+	var cur, scr int32
+	var steps [][2]int32
+	switch dir {
+	case 0, 1: // left / right: cycle the width
+		cur, scr = frame.Width(), work.Width()
+		steps = [][2]int32{{2, 3}, {1, 2}, {1, 3}, {1, 1}}
+	case 2, 3: // top / bottom: cycle the height
+		cur, scr = frame.Height(), work.Height()
+		steps = [][2]int32{{3, 4}, {2, 3}, {1, 2}, {1, 3}, {1, 1}}
+	default:
+		return 0, false
+	}
+	for k := 0; k < len(steps)-1; k++ {
+		if int64(steps[k][0])*int64(scr) < int64(steps[k][1])*int64(cur) {
+			return k, true
+		}
+	}
+	return len(steps) - 1, true
 }
 
 func resize(hwnd w32.HWND, f resizeFunc) (bool, error) {
