@@ -60,7 +60,17 @@ are not offering enough hotkey support.
 
 ## Development (Install from source)
 
-With Go 1.17+ installed, clone this repository and run:
+With Go 1.17+ installed, clone this repository and run the commands for your
+platform below.
+
+On Windows (PowerShell):
+
+```powershell
+go generate
+go build -ldflags "-H=windowsgui" .
+```
+
+On Linux/macOS (cross-compiles a Windows executable):
 
 ```sh
 go generate
