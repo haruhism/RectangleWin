@@ -50,21 +50,63 @@ func toBottom(d w32.RECT, mul, div int32) w32.RECT {
 		Bottom: d.Top + d.Height()}
 }
 
-func leftHalf(disp, _ w32.RECT) w32.RECT      { return toLeft(disp, 1, 2) }
-func leftOneThirds(disp, _ w32.RECT) w32.RECT { return toLeft(disp, 1, 3) }
-func leftTwoThirds(disp, _ w32.RECT) w32.RECT { return toLeft(disp, 2, 3) }
+// Edge snapping keeps the original position and size on the axis that is not
+// being snapped. Left/right cycle the width and top/bottom cycle the height
+// through 2/3, 1/2, 1/3 and full screen.
 
-func topHalf(disp, _ w32.RECT) w32.RECT      { return toTop(disp, 1, 2) }
-func topOneThirds(disp, _ w32.RECT) w32.RECT { return toTop(disp, 1, 3) }
-func topTwoThirds(disp, _ w32.RECT) w32.RECT { return toTop(disp, 2, 3) }
+func toLeftEdge(disp, cur w32.RECT, mul, div int32) w32.RECT {
+	return w32.RECT{
+		Left:   disp.Left,
+		Top:    cur.Top,
+		Right:  disp.Left + disp.Width()*mul/div,
+		Bottom: cur.Bottom}
+}
 
-func rightHalf(disp, _ w32.RECT) w32.RECT      { return toRight(disp, 1, 2) }
-func rightOneThirds(disp, _ w32.RECT) w32.RECT { return toRight(disp, 1, 3) }
-func rightTwoThirds(disp, _ w32.RECT) w32.RECT { return toRight(disp, 2, 3) }
+func toRightEdge(disp, cur w32.RECT, mul, div int32) w32.RECT {
+	return w32.RECT{
+		Left:   disp.Left + disp.Width() - disp.Width()*mul/div,
+		Top:    cur.Top,
+		Right:  disp.Left + disp.Width(),
+		Bottom: cur.Bottom}
+}
 
-func bottomHalf(disp, _ w32.RECT) w32.RECT      { return toBottom(disp, 1, 2) }
-func bottomOneThirds(disp, _ w32.RECT) w32.RECT { return toBottom(disp, 1, 3) }
-func bottomTwoThirds(disp, _ w32.RECT) w32.RECT { return toBottom(disp, 2, 3) }
+func toTopEdge(disp, cur w32.RECT, mul, div int32) w32.RECT {
+	return w32.RECT{
+		Left:   cur.Left,
+		Top:    disp.Top,
+		Right:  cur.Right,
+		Bottom: disp.Top + disp.Height()*mul/div}
+}
+
+func toBottomEdge(disp, cur w32.RECT, mul, div int32) w32.RECT {
+	return w32.RECT{
+		Left:   cur.Left,
+		Top:    disp.Top + disp.Height() - disp.Height()*mul/div,
+		Right:  cur.Right,
+		Bottom: disp.Top + disp.Height()}
+}
+
+func leftTwoThirdsEdge(disp, cur w32.RECT) w32.RECT { return toLeftEdge(disp, cur, 2, 3) }
+func leftHalfEdge(disp, cur w32.RECT) w32.RECT      { return toLeftEdge(disp, cur, 1, 2) }
+func leftOneThirdEdge(disp, cur w32.RECT) w32.RECT  { return toLeftEdge(disp, cur, 1, 3) }
+func leftFullEdge(disp, cur w32.RECT) w32.RECT      { return toLeftEdge(disp, cur, 1, 1) }
+
+func rightTwoThirdsEdge(disp, cur w32.RECT) w32.RECT { return toRightEdge(disp, cur, 2, 3) }
+func rightHalfEdge(disp, cur w32.RECT) w32.RECT      { return toRightEdge(disp, cur, 1, 2) }
+func rightOneThirdEdge(disp, cur w32.RECT) w32.RECT  { return toRightEdge(disp, cur, 1, 3) }
+func rightFullEdge(disp, cur w32.RECT) w32.RECT      { return toRightEdge(disp, cur, 1, 1) }
+
+func topThreeQuartersEdge(disp, cur w32.RECT) w32.RECT { return toTopEdge(disp, cur, 3, 4) }
+func topTwoThirdsEdge(disp, cur w32.RECT) w32.RECT     { return toTopEdge(disp, cur, 2, 3) }
+func topHalfEdge(disp, cur w32.RECT) w32.RECT          { return toTopEdge(disp, cur, 1, 2) }
+func topOneThirdEdge(disp, cur w32.RECT) w32.RECT      { return toTopEdge(disp, cur, 1, 3) }
+func topFullEdge(disp, cur w32.RECT) w32.RECT          { return toTopEdge(disp, cur, 1, 1) }
+
+func bottomThreeQuartersEdge(disp, cur w32.RECT) w32.RECT { return toBottomEdge(disp, cur, 3, 4) }
+func bottomTwoThirdsEdge(disp, cur w32.RECT) w32.RECT     { return toBottomEdge(disp, cur, 2, 3) }
+func bottomHalfEdge(disp, cur w32.RECT) w32.RECT          { return toBottomEdge(disp, cur, 1, 2) }
+func bottomOneThirdEdge(disp, cur w32.RECT) w32.RECT      { return toBottomEdge(disp, cur, 1, 3) }
+func bottomFullEdge(disp, cur w32.RECT) w32.RECT          { return toBottomEdge(disp, cur, 1, 1) }
 
 func topLeftHalf(disp, _ w32.RECT) w32.RECT      { return merge(toLeft(disp, 1, 2), toTop(disp, 1, 2)) }
 func topLeftTwoThirds(disp, _ w32.RECT) w32.RECT { return merge(toLeft(disp, 2, 3), toTop(disp, 1, 2)) }

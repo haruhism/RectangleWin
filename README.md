@@ -25,9 +25,9 @@ only using hotkeys:
 
 ## Keyboard Bindings
 
-- **Snap to edges** (left/right/top/bottom ½, ⅔, ⅓):
-  - <kbd>Win</kbd> + <kbd>Alt</kbd> + <kbd>&larr;</kbd><kbd>&rarr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd>
-  - Press multiple times to alternate between ½, ⅔ and ⅓.
+- **Snap to edges** (<kbd>Win</kbd>+<kbd>Alt</kbd>+arrow key):
+  - <kbd>Win</kbd> + <kbd>Alt</kbd> + <kbd>&larr;</kbd><kbd>&rarr;</kbd>: snap to the left/right edge, keeping the vertical position and height; cycles the width through ⅔, ½, ⅓ and full screen.
+  - <kbd>Win</kbd> + <kbd>Alt</kbd> + <kbd>&uarr;</kbd><kbd>&darr;</kbd>: snap to the top/bottom edge, keeping the horizontal position and width; cycles the height through ¾, ⅔, ½, ⅓ and full screen.
 
 - **Corner snapping**
   - <kbd>Win</kbd> + <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>&larr;</kbd>: top-left ½, ⅔ and ⅓
